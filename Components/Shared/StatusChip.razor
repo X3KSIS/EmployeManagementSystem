@@ -1,0 +1,13 @@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="ChipColor"
+         Icon="@Icons.Material.Filled.Circle">@Formatters.StatusText(Status)</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public EmployeeStatus Status { get; set; }
+
+    private Color ChipColor => Status switch
+    {
+        EmployeeStatus.Active => Color.Success,
+        EmployeeStatus.OnLeave => Color.Warning,
+        _ => Color.Default
+    };
+}

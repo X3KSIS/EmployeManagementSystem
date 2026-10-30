@@ -1,0 +1,83 @@
+@inherits LayoutComponentBase
+@inject ISnackbar Snackbar
+
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive" Class="ems-drawer">
+        <div class="d-flex flex-column" style="height:100%;">
+            <div class="ems-brand">
+                <MudIcon Icon="@Icons.Material.Filled.Layers" Style="color:#2f80ff; font-size:2.2rem;" />
+                <span>EMS</span>
+            </div>
+
+            <div class="flex-grow-1">
+                <NavMenu />
+            </div>
+
+            <div class="ems-drawer-footer">
+                <MudAvatar Color="Color.Primary" Size="Size.Medium">AU</MudAvatar>
+                <div>
+                    <div class="ems-footer-name">Admin User</div>
+                    <div class="ems-footer-mail">admin@bangison.com</div>
+                </div>
+            </div>
+        </div>
+    </MudDrawer>
+
+    <MudAppBar Elevation="0" Class="ems-appbar">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                       OnClick="ToggleDrawer" Class="d-md-none" />
+        <div>
+            <MudText Typo="Typo.h6" Class="font-weight-bold">Bangison Ltd</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Welcome back</MudText>
+        </div>
+        <MudSpacer />
+        
+    </MudAppBar>
+
+    <MudMainContent Class="ems-main">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1565f0",
+            Secondary = "#6b7a90",
+            Background = "#f4f6fa",
+            Surface = "#ffffff",
+            AppbarBackground = "#ffffff",
+            AppbarText = "#0b1b3a",
+            TextPrimary = "#0b1b3a",
+            TextSecondary = "#6b7a90",
+            DrawerBackground = "#071a3d",
+            DrawerText = "rgba(255,255,255,0.85)",
+            DrawerIcon = "rgba(255,255,255,0.85)"
+        },
+        LayoutProperties = new LayoutProperties
+        {
+            DrawerWidthLeft = "240px",
+            DefaultBorderRadius = "8px"
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" } }
+        }
+    };
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private void Logout() =>
+        Snackbar.Add("Authentication is not part of this exercise.", Severity.Info);
+}

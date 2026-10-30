@@ -1,0 +1,103 @@
+@page "/employees/{Id:int}"
+@inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>EMS | Employee Details</PageTitle>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (_employee is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">Employee not found.</MudAlert>
+    <MudButton Href="/employees" Variant="Variant.Outlined">Back to employees</MudButton>
+}
+else
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap" Class="mb-4">
+    <MudText Typo="Typo.h4" Class="font-weight-bold">Employee Details</MudText>
+
+    <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+             Color="Color.Default"
+             AnchorOrigin="Origin.BottomRight"
+             TransformOrigin="Origin.TopRight"
+             Dense="true">
+        
+        <MudMenuItem Icon="@Icons.Material.Filled.ArrowBack"
+                     Href="/employees">
+            Back
+        </MudMenuItem>
+
+        <MudMenuItem Icon="@Icons.Material.Filled.Edit"
+                     Href="@($"/employees/edit/{_employee.Id}")">
+            Edit
+        </MudMenuItem>
+
+        <MudMenuItem Icon="@Icons.Material.Filled.Delete"
+                     OnClick="@(() => _confirmDelete = true)"
+                     IconColor="Color.Error">
+            Delete
+        </MudMenuItem>
+    </MudMenu>
+</MudStack>
+
+    <MudPaper Outlined="true" Class="pa-6 rounded-lg">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Class="mb-6">
+            <EmployeeAvatar Initials="@_employee.Initials" ColorSeed="@_employee.Id" AvatarSize="Size.Large" />
+            <div>
+                <MudText Typo="Typo.h5" Class="font-weight-bold">@_employee.FullName</MudText>
+                <MudText Color="Color.Secondary">@_employee.JobTitle</MudText>
+            </div>
+            <StatusChip Status="@_employee.Status" />
+        </MudStack>
+
+        <MudDivider Class="mb-6" />
+
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4"><DetailItem Label="Employee ID" Value="@_employee.Id.ToString()" /></MudItem>
+            <MudItem xs="12" sm="6" md="4"><DetailItem Label="Department" Value="@_employee.Department" /></MudItem>
+            <MudItem xs="12" sm="6" md="4"><DetailItem Label="Salary" Value="@Formatters.Money(_employee.Salary)" /></MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <DetailItem Label="Email">
+                    <MudLink Href="@($"mailto:{_employee.Email}")">@_employee.Email</MudLink>
+                </DetailItem>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <DetailItem Label="Date Hired" Value="@_employee.DateHired?.ToString("dd MMM yyyy")" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <ConfirmDialog Visible="_confirmDelete"
+                   Title="Delete employee?"
+                   Message="@($"This will permanently remove {_employee.FullName}. This cannot be undone.")"
+                   OnConfirm="DeleteAsync"
+                   OnCancel="@(() => _confirmDelete = false)" />
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Employee? _employee;
+    private bool _loading = true;
+    private bool _confirmDelete;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _employee = await EmployeeService.GetByIdAsync(Id);
+        _loading = false;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_employee is null) return;
+
+        var name = _employee.FullName;
+        await EmployeeService.DeleteAsync(_employee.Id);
+        Snackbar.Add($"{name} was deleted.", Severity.Success);
+        Navigation.NavigateTo("/employees");
+    }
+}

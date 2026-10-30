@@ -1,0 +1,87 @@
+@* Reusable form used by both the Add and Edit pages. It owns the UI and validation only;
+   the parent decides what "save" means (add vs update). *@
+
+<EditForm Model="Model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string" @bind-Value="Model.FirstName" For="@(() => Model.FirstName)"
+                          Label="First Name *" Variant="Variant.Outlined" Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string" @bind-Value="Model.LastName" For="@(() => Model.LastName)"
+                          Label="Last Name *" Variant="Variant.Outlined" Immediate="true" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string" @bind-Value="Model.Email" For="@(() => Model.Email)"
+                          Label="Email *" InputType="InputType.Email" Variant="Variant.Outlined"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Email" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string" @bind-Value="Model.JobTitle" For="@(() => Model.JobTitle)"
+                          Label="Job Title *" Variant="Variant.Outlined" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="string" @bind-Value="Model.Department" For="@(() => Model.Department)"
+                       Label="Department *" Variant="Variant.Outlined">
+                @foreach (var dept in Departments)
+                {
+                    <MudSelectItem T="string" Value="@dept">@dept</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal" @bind-Value="Model.Salary" For="@(() => Model.Salary)"
+                             Label="Salary *" Variant="Variant.Outlined" HideSpinButtons="true"
+                             Adornment="Adornment.Start" AdornmentText="$" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="EmployeeStatus" @bind-Value="Model.Status" Label="Status" Variant="Variant.Outlined">
+                @foreach (var status in Enum.GetValues<EmployeeStatus>())
+                {
+                    <MudSelectItem T="EmployeeStatus" Value="@status">@Formatters.StatusText(status)</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudDatePicker @bind-Date="Model.DateHired" Label="Date Hired" Variant="Variant.Outlined" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+                <MudButton Variant="Variant.Outlined" OnClick="@(() => OnCancel.InvokeAsync())">Cancel</MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_saving">@SubmitText</MudButton>
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    private bool _saving;
+
+    [Parameter, EditorRequired] public Employee Model { get; set; } = new();
+    [Parameter, EditorRequired] public IReadOnlyList<string> Departments { get; set; } = Array.Empty<string>();
+    [Parameter] public string SubmitText { get; set; } = "Save";
+
+    [Parameter] public EventCallback<Employee> OnSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    // Only runs when every DataAnnotations rule passes.
+    private async Task HandleValidSubmit()
+    {
+        _saving = true;
+        try
+        {
+            await OnSubmit.InvokeAsync(Model);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

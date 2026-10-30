@@ -1,0 +1,30 @@
+@page "/departments"
+@inject IEmployeeService EmployeeService
+
+<PageTitle>EMS | Departments</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Departments</MudText>
+
+<MudPaper Outlined="true" Class="rounded-lg ems-table">
+    <MudTable T="DepartmentSummary" Items="_summaries" Hover="true" Elevation="0">
+        <HeaderContent>
+            <MudTh>Department</MudTh>
+            <MudTh>Employees</MudTh>
+            <MudTh>Average Salary</MudTh>
+            <MudTh>Total Payroll</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Department">@context.Name</MudTd>
+            <MudTd DataLabel="Employees">@context.EmployeeCount</MudTd>
+            <MudTd DataLabel="Average Salary">@Formatters.Money(context.AverageSalary)</MudTd>
+            <MudTd DataLabel="Total Payroll">@Formatters.Money(context.TotalPayroll)</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private IReadOnlyList<DepartmentSummary> _summaries = Array.Empty<DepartmentSummary>();
+
+    protected override async Task OnInitializedAsync()
+        => _summaries = await EmployeeService.GetDepartmentSummariesAsync();
+}

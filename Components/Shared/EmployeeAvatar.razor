@@ -1,0 +1,17 @@
+<MudAvatar Size="AvatarSize" Style="@_style">@Initials</MudAvatar>
+
+@code {
+    private static readonly string[] Palette =
+    {
+        "#3b5b8c", "#2e7d6b", "#8c5a3b", "#6a4c93", "#b0475a", "#2f6f9f"
+    };
+
+    [Parameter, EditorRequired] public string Initials { get; set; } = string.Empty;
+
+    /// <summary>Anything stable (the employee Id) so the same person always gets the same colour.</summary>
+    [Parameter] public int ColorSeed { get; set; }
+
+    [Parameter] public Size AvatarSize { get; set; } = Size.Medium;
+
+    private string _style => $"background-color:{Palette[Math.Abs(ColorSeed) % Palette.Length]};color:#fff;font-weight:600;";
+}

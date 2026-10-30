@@ -1,0 +1,60 @@
+@page "/employees/edit/{Id:int}"
+@inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>EMS | Edit Employee</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Edit Employee</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (_employee is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">Employee not found.</MudAlert>
+    <MudButton Href="/employees" Variant="Variant.Outlined">Back to employees</MudButton>
+}
+else
+{
+    <MudPaper Outlined="true" Class="pa-6 rounded-lg">
+        <EmployeeForm Model="_employee"
+                      Departments="EmployeeService.Departments"
+                      SubmitText="Update Employee"
+                      OnSubmit="SaveAsync"
+                      OnCancel="GoBack" />
+    </MudPaper>
+}
+
+@code {
+    // Value from the route: /employees/edit/{Id}
+    [Parameter] public int Id { get; set; }
+
+    private Employee? _employee;
+    private bool _loading = true;
+
+    // Runs whenever route parameters change (also covers the first load).
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _employee = await EmployeeService.GetByIdAsync(Id); // a copy, safe to edit
+        _loading = false;
+    }
+
+    private async Task SaveAsync(Employee employee)
+    {
+        if (await EmployeeService.EmailExistsAsync(employee.Email, excludeEmployeeId: employee.Id))
+        {
+            Snackbar.Add("Another employee already uses this email.", Severity.Error);
+            return;
+        }
+
+        var updated = await EmployeeService.UpdateAsync(employee);
+        Snackbar.Add(updated ? $"{employee.FullName} was updated." : "Employee no longer exists.",
+                     updated ? Severity.Success : Severity.Error);
+        Navigation.NavigateTo("/employees");
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/employees");
+}

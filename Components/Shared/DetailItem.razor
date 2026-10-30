@@ -1,0 +1,17 @@
+<div class="mb-4">
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Style="text-transform:uppercase; letter-spacing:.05em;">@Label</MudText>
+    @if (ChildContent is not null)
+    {
+        <div>@ChildContent</div>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(Value) ? "—" : Value)</MudText>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

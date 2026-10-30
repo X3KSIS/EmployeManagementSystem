@@ -1,0 +1,174 @@
+@page "/employees"
+@inject IEmployeeService EmployeeService
+@inject ISnackbar Snackbar
+
+<PageTitle>EMS | All Employees</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">All Employees</MudText>
+
+@* Summary cards: total employees + average salary *@
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6">
+        <StatCard Title="Total Employees" Value="@_stats.TotalCount.ToString()"
+                  Icon="@Icons.Material.Filled.People" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <StatCard Title="Average Salary" Value="@Formatters.Money(_stats.AverageSalary)"
+                  Icon="@Icons.Material.Filled.Payments" IconColor="Color.Success" />
+    </MudItem>
+</MudGrid>
+
+@* Toolbar: search, department filter, sort, add button *@
+<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="3" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged"
+                  Immediate="true" DebounceInterval="300"
+                  Placeholder="Search employee..." Variant="Variant.Outlined" Margin="Margin.Dense"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                  Style="min-width:280px; background:#fff;" />
+
+    <MudSelect T="string" Value="_department" ValueChanged="OnDepartmentChanged"
+               Label="Department" Clearable="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+               Style="min-width:200px; background:#fff;">
+        @foreach (var dept in EmployeeService.Departments)
+        {
+            <MudSelectItem T="string" Value="@dept">@dept</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSelect T="EmployeeSortOption" Value="_sort" ValueChanged="OnSortChanged"
+               Label="Sort by" Variant="Variant.Outlined" Margin="Margin.Dense"
+               Style="min-width:200px; background:#fff;">
+        <MudSelectItem T="EmployeeSortOption" Value="EmployeeSortOption.NameAsc">Name (A–Z)</MudSelectItem>
+        <MudSelectItem T="EmployeeSortOption" Value="EmployeeSortOption.NameDesc">Name (Z–A)</MudSelectItem>
+        <MudSelectItem T="EmployeeSortOption" Value="EmployeeSortOption.SalaryAsc">Salary (low to high)</MudSelectItem>
+        <MudSelectItem T="EmployeeSortOption" Value="EmployeeSortOption.SalaryDesc">Salary (high to low)</MudSelectItem>
+    </MudSelect>
+
+    <MudSpacer />
+
+    <MudButton Href="/employees/add" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">Add New Employee</MudButton>
+</MudStack>
+
+<MudPaper Outlined="true" Class="rounded-lg ems-table">
+    <MudTable T="Employee" Items="_employees" Hover="true" Elevation="0" Loading="_loading"
+              Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Employee Name</MudTh>
+            <MudTh>Department</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Salary</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Employee Name">
+                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                    <EmployeeAvatar Initials="@context.Initials" ColorSeed="@context.Id" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@context.FullName</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@context.JobTitle</MudText>
+                    </div>
+                </MudStack>
+            </MudTd>
+            <MudTd DataLabel="Department">@context.Department</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="Salary">@Formatters.Money(context.Salary)</MudTd>
+            <MudTd DataLabel="Status"><StatusChip Status="@context.Status" /></MudTd>
+            <MudTd DataLabel="Actions">
+    <MudMenu Dense="true"
+             AnchorOrigin="Origin.BottomRight"
+             TransformOrigin="Origin.TopRight">
+        <ActivatorContent>
+            <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz"
+                           Size="Size.Small"
+                           Color="Color.Default"
+                           Variant="Variant.Text" />
+        </ActivatorContent>
+        <ChildContent>
+            <MudMenuItem Icon="@Icons.Material.Outlined.Visibility"
+                         Href="@($"/employees/{context.Id}")">
+                View
+            </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Outlined.Edit"
+                         Href="@($"/employees/edit/{context.Id}")">
+                Edit
+            </MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Outlined.Delete"
+                         IconColor="Color.Error"
+                         OnClick="@(() => AskToDelete(context))">
+                Delete
+            </MudMenuItem>
+        </ChildContent>
+    </MudMenu>
+</MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Class="pa-6" Color="Color.Secondary">No employees match your search or filter.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+<ConfirmDialog Visible="@(_employeeToDelete is not null)"
+               Title="Delete employee?"
+               Message="@($"This will permanently remove {_employeeToDelete?.FullName}. This cannot be undone.")"
+               OnConfirm="DeleteConfirmedAsync"
+               OnCancel="CancelDelete" />
+
+@code {
+    private IReadOnlyList<Employee> _employees = Array.Empty<Employee>();
+    private EmployeeStats _stats = new(0, 0m, 0, 0);
+
+    private string? _search;
+    private string? _department;
+    private EmployeeSortOption _sort = EmployeeSortOption.NameAsc;
+
+    private bool _loading = true;
+    private Employee? _employeeToDelete;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _employees = await EmployeeService.GetEmployeesAsync(new EmployeeFilter(_search, _department, _sort));
+        _stats = await EmployeeService.GetStatsAsync();
+        _loading = false;
+    }
+
+    private async Task OnSearchChanged(string? value)
+    {
+        _search = value;
+        await LoadAsync();
+    }
+
+    private async Task OnDepartmentChanged(string? value)
+    {
+        _department = value;
+        await LoadAsync();
+    }
+
+    private async Task OnSortChanged(EmployeeSortOption value)
+    {
+        _sort = value;
+        await LoadAsync();
+    }
+
+    private void AskToDelete(Employee employee) => _employeeToDelete = employee;
+
+    private void CancelDelete() => _employeeToDelete = null;
+
+    private async Task DeleteConfirmedAsync()
+    {
+        if (_employeeToDelete is null) return;
+
+        var name = _employeeToDelete.FullName;
+        var deleted = await EmployeeService.DeleteAsync(_employeeToDelete.Id);
+        _employeeToDelete = null;
+
+        Snackbar.Add(deleted ? $"{name} was deleted." : "Employee could not be found.",
+                     deleted ? Severity.Success : Severity.Warning);
+
+        await LoadAsync();
+    }
+}

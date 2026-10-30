@@ -1,0 +1,21 @@
+<MudOverlay Visible="Visible" DarkBackground="true" ZIndex="2000" AutoClose="false">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="8" Style="width:min(440px, 90vw);">
+        <MudText Typo="Typo.h6" Class="font-weight-bold">@Title</MudText>
+        <MudText Class="mt-2" Color="Color.Secondary">@Message</MudText>
+        <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-6">
+            <MudButton Variant="Variant.Text" OnClick="@(() => OnCancel.InvokeAsync())">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => OnConfirm.InvokeAsync())">@ConfirmText</MudButton>
+        </MudStack>
+    </MudPaper>
+</MudOverlay>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Title { get; set; } = "Are you sure?";
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public string ConfirmText { get; set; } = "Delete";
+
+    // EventCallback = how a child component tells its parent "something happened".
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

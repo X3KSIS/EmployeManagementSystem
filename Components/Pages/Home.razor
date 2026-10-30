@@ -1,0 +1,56 @@
+@page "/"
+@inject IEmployeeService EmployeeService
+
+<PageTitle>EMS | Dashboard</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Dashboard</MudText>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6" md="3">
+        <StatCard Title="Total Employees" Value="@_stats.TotalCount.ToString()" Icon="@Icons.Material.Filled.People" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <StatCard Title="Average Salary" Value="@Formatters.Money(_stats.AverageSalary)"
+                  Icon="@Icons.Material.Filled.Payments" IconColor="Color.Success" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <StatCard Title="Departments" Value="@_stats.DepartmentCount.ToString()"
+                  Icon="@Icons.Material.Filled.Business" IconColor="Color.Info" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <StatCard Title="On Leave" Value="@_stats.OnLeaveCount.ToString()"
+                  Icon="@Icons.Material.Filled.EventBusy" IconColor="Color.Warning" />
+    </MudItem>
+</MudGrid>
+
+<MudPaper Outlined="true" Class="pa-4 rounded-lg">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+        <MudText Typo="Typo.h6" Class="font-weight-bold">Recently Added</MudText>
+        <MudButton Href="/employees" Color="Color.Primary">View all</MudButton>
+    </MudStack>
+
+    @foreach (var e in _recent)
+    {
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Class="py-2">
+            <EmployeeAvatar Initials="@e.Initials" ColorSeed="@e.Id" />
+            <div class="flex-grow-1">
+                <MudLink Href="@($"/employees/{e.Id}")" Typo="Typo.subtitle2" Color="Color.Inherit"
+                         Class="font-weight-bold">@e.FullName</MudLink>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@e.JobTitle · @e.Department</MudText>
+            </div>
+            <StatusChip Status="@e.Status" />
+        </MudStack>
+    }
+</MudPaper>
+
+@code {
+    private EmployeeStats _stats = new(0, 0m, 0, 0);
+    private IReadOnlyList<Employee> _recent = Array.Empty<Employee>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await EmployeeService.GetStatsAsync();
+        var all = await EmployeeService.GetEmployeesAsync();
+        _recent = all.OrderByDescending(e => e.Id).Take(5).ToList();
+    }
+}

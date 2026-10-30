@@ -1,0 +1,35 @@
+@page "/employees/add"
+@inject IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>EMS | Add Employee</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Add Employee</MudText>
+
+<MudPaper Outlined="true" Class="pa-6 rounded-lg">
+    <EmployeeForm Model="_employee"
+                  Departments="EmployeeService.Departments"
+                  SubmitText="Save Employee"
+                  OnSubmit="SaveAsync"
+                  OnCancel="GoBack" />
+</MudPaper>
+
+@code {
+    private readonly Employee _employee = new();
+
+    private async Task SaveAsync(Employee employee)
+    {
+        if (await EmployeeService.EmailExistsAsync(employee.Email))
+        {
+            Snackbar.Add("An employee with this email already exists.", Severity.Error);
+            return;
+        }
+
+        var created = await EmployeeService.AddAsync(employee);
+        Snackbar.Add($"{created.FullName} was added.", Severity.Success);
+        Navigation.NavigateTo("/employees");
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/employees");
+}

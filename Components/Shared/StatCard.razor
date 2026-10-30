@@ -1,0 +1,16 @@
+<MudPaper Outlined="true" Class="pa-4 rounded-lg d-flex align-center" Style="gap:16px;">
+    <MudAvatar Color="IconColor" Variant="Variant.Filled" Size="Size.Large">
+        <MudIcon Icon="@Icon" />
+    </MudAvatar>
+    <div>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@Title</MudText>
+        <MudText Typo="Typo.h5" Class="font-weight-bold">@Value</MudText>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Value { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Info;
+    [Parameter] public Color IconColor { get; set; } = Color.Primary;
+}

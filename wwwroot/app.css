@@ -1,0 +1,102 @@
+html, body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ---------- Sidebar ---------- */
+.ems-drawer.mud-drawer {
+    background-color: #071a3d;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.ems-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 24px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 12px;
+}
+
+.ems-drawer .mud-nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    margin: 4px 12px;
+    padding: 10px 14px;
+}
+
+.ems-drawer .mud-nav-link .mud-icon-root {
+    color: inherit;
+}
+
+.ems-drawer .mud-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.ems-drawer .mud-nav-link.active {
+    background-color: #1565f0 !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+
+.ems-drawer .mud-nav-link.mud-disabled {
+    opacity: 0.5;
+}
+
+.ems-drawer-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ems-footer-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.ems-footer-mail {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+/* ---------- Top bar & content ---------- */
+.ems-appbar.mud-appbar {
+    background-color: #fff;
+    color: #0b1b3a;
+    border-bottom: 1px solid #e3e8ef;
+}
+
+.ems-main {
+    background-color: #f4f6fa;
+    min-height: 100vh;
+}
+
+.ems-table .mud-table-head .mud-table-cell {
+    font-weight: 600;
+    background-color: #f8fafc;
+}
+
+/* Blazor's built-in error banner */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}

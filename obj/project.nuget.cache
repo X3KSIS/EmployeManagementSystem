@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "mscmOawICdY=",
+  "success": true,
+  "projectFilePath": "/home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/EmployeeManagementSystem.csproj",
+  "expectedPackageFiles": [
+    "/home/bangi18/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.13/microsoft.aspnetcore.app.internal.assets.10.0.13.nupkg.sha512",
+    "/home/bangi18/.nuget/packages/mudblazor/8.15.0/mudblazor.8.15.0.nupkg.sha512"
+  ],
+  "logs": []
+}
