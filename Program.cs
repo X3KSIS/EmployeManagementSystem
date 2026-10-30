@@ -15,6 +15,7 @@ builder.Services.AddMudServices();
 // Singleton = ONE instance for the whole app, so the in-memory list survives page navigation
 // and is shared by every browser tab. (A DbContext-backed service would be Scoped instead.)
 builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<AppSettingsService>();
 
 var app = builder.Build();
 

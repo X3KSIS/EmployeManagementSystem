@@ -1,7 +1,9 @@
 @inherits LayoutComponentBase
+@using EmployeeManagementSystem.Services
 @inject ISnackbar Snackbar
+@inject AppSettingsService Settings
 
-<MudThemeProvider Theme="_theme" />
+<MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDark" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -36,7 +38,6 @@
             <MudText Typo="Typo.body2" Color="Color.Secondary">Welcome back</MudText>
         </div>
         <MudSpacer />
-        
     </MudAppBar>
 
     <MudMainContent Class="ems-main">
@@ -48,6 +49,7 @@
 
 @code {
     private bool _drawerOpen = true;
+    private bool _isDark;
 
     private readonly MudTheme _theme = new()
     {
@@ -65,6 +67,20 @@
             DrawerText = "rgba(255,255,255,0.85)",
             DrawerIcon = "rgba(255,255,255,0.85)"
         },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#5b9bff",
+            Secondary = "#90a4b8",
+            Background = "#0b1526",
+            Surface = "#12213a",
+            AppbarBackground = "#12213a",
+            AppbarText = "#e8eef7",
+            TextPrimary = "#e8eef7",
+            TextSecondary = "#90a4b8",
+            DrawerBackground = "#071a3d",
+            DrawerText = "rgba(255,255,255,0.85)",
+            DrawerIcon = "rgba(255,255,255,0.85)"
+        },
         LayoutProperties = new LayoutProperties
         {
             DrawerWidthLeft = "240px",
@@ -75,6 +91,18 @@
             Default = new DefaultTypography { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" } }
         }
     };
+
+    protected override void OnInitialized()
+    {
+        _isDark = Settings.Current.DarkMode;
+        Settings.OnChange += HandleSettingsChanged;
+    }
+
+    private void HandleSettingsChanged()
+    {
+        _isDark = Settings.Current.DarkMode;
+        StateHasChanged();
+    }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 

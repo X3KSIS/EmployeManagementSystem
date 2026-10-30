@@ -1,0 +1,34 @@
+@page "/settings"
+@using EmployeeManagementSystem.Services
+@inject AppSettingsService AppSettings
+@inject ISnackbar Snackbar
+
+<PageTitle>Settings</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Settings</MudText>
+
+<MudPaper Class="pa-6" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-2">Appearance</MudText>
+
+    <MudSwitch T="bool"
+                Value="_darkMode"
+               ValueChanged="OnDarkModeChanged"
+               Label="@(_darkMode ? "Dark mode" : "Light mode")"
+               Color="Color.Primary" />
+</MudPaper>
+
+@code {
+    private bool _darkMode;
+
+    protected override void OnInitialized()
+    {
+        _darkMode = AppSettings.Current.DarkMode;
+    }
+
+    private void OnDarkModeChanged(bool value)
+    {
+        _darkMode = value;
+        AppSettings.SetDarkMode(value);
+        Snackbar.Add(value ? "Dark mode enabled." : "Light mode enabled.", Severity.Info);
+    }
+}

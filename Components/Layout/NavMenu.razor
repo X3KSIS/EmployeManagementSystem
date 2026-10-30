@@ -23,17 +23,16 @@
 
     <MudNavGroup Title="More" Icon="@Icons.Material.Outlined.MoreHoriz" Expanded="false">
 
-    <MudNavLink OnClick="OnReportsClick"
-                Icon="@Icons.Material.Outlined.Description">
-        Reports
-    </MudNavLink>
+        <MudNavLink OnClick="OnReportsClick"
+                    Icon="@Icons.Material.Outlined.Description">
+            Reports
+        </MudNavLink>
 
-    <MudNavLink OnClick="OnSettingsClick"
-                Icon="@Icons.Material.Outlined.Settings">
-        Settings
-    </MudNavLink>
+        <MudNavLink Href="/settings" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Settings">
+            Settings
+        </MudNavLink>
 
-</MudNavGroup>
+    </MudNavGroup>
 </MudNavMenu>
 
 @code{
@@ -41,8 +40,5 @@
     {
         Snackbar.Add("Reports is not implemented yet.", Severity.Info);
     }
-    private void OnSettingsClick()
-    {
-        Snackbar.Add("Settings is not implemented yet.", Severity.Info);
-    }
+    
 }
