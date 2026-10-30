@@ -74,3 +74,4 @@ E:/C#/EmployeeManagementSystem (2)/EmployeeManagementSystem/obj/Debug/net10.0/re
 /home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/obj/Debug/net10.0/EmployeeManagementSystem.pdb
 /home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/obj/Debug/net10.0/EmployeeManagementSystem.genruntimeconfig.cache
 /home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/obj/Debug/net10.0/ref/EmployeeManagementSystem.dll
+/home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/obj/Debug/net10.0/EmployeeManagementSystem.sourcelink.json

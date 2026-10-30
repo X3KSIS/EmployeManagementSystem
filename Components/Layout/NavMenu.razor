@@ -1,3 +1,4 @@
+@inject ISnackbar Snackbar
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Home">
         Dashboard
@@ -5,9 +6,9 @@
 
     
     <MudNavGroup Title="Employees" 
-                 Icon="@Icons.Material.Outlined.People" 
-                 Expanded="true"> 
-        <MudNavLink Href="/employees" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.People">
+                Icon="@Icons.Material.Outlined.People" 
+                Expanded="true"> 
+        <MudNavLink Href="/employees" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.People">
             All Employees
         </MudNavLink>
         <MudNavLink Href="/employees/add" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.PersonAdd">
@@ -19,13 +20,29 @@
         Departments
     </MudNavLink>
 
-    <!-- Disabled items can also be inside groups if you prefer -->
+
     <MudNavGroup Title="More" Icon="@Icons.Material.Outlined.MoreHoriz" Expanded="false">
-        <MudNavLink Disabled="true" Icon="@Icons.Material.Outlined.Description">
-            Reports
-        </MudNavLink>
-        <MudNavLink Disabled="true" Icon="@Icons.Material.Outlined.Settings">
-            Settings
-        </MudNavLink>
-    </MudNavGroup>
+
+    <MudNavLink OnClick="OnReportsClick"
+                Icon="@Icons.Material.Outlined.Description">
+        Reports
+    </MudNavLink>
+
+    <MudNavLink OnClick="OnSettingsClick"
+                Icon="@Icons.Material.Outlined.Settings">
+        Settings
+    </MudNavLink>
+
+</MudNavGroup>
 </MudNavMenu>
+
+@code{
+    private void OnReportsClick()
+    {
+        Snackbar.Add("Reports is not implemented yet.", Severity.Info);
+    }
+    private void OnSettingsClick()
+    {
+        Snackbar.Add("Settings is not implemented yet.", Severity.Info);
+    }
+}
