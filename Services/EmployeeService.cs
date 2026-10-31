@@ -147,7 +147,7 @@ public class EmployeeService : IEmployeeService
         }
     }
 
-    // ---------- Helpers ----------
+
 
     private static Employee Normalize(Employee e)
     {
@@ -186,7 +186,7 @@ public class EmployeeService : IEmployeeService
             JobTitle = title,
             Salary = salary,
             Status = status,
-            Email = $"{first}.{last}@company.com".ToLowerInvariant(),
+            Email = $"{first}.{last}@bangison.com".ToLowerInvariant(),
             DateHired = DateTime.Today.AddMonths(-Random.Shared.Next(2, 48))
         };
     }

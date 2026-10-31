@@ -1,8 +1,8 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net10.0": {
-      "Microsoft.AspNetCore.App.Internal.Assets/10.0.13": {
+      "Microsoft.AspNetCore.App.Internal.Assets/10.0.9": {
         "type": "package",
         "build": {
           "build/Microsoft.AspNetCore.App.Internal.Assets.props": {},
@@ -35,10 +35,10 @@
     }
   },
   "libraries": {
-    "Microsoft.AspNetCore.App.Internal.Assets/10.0.13": {
-      "sha512": "Y2cXnMnqht5fvja2H8kkr5WA2fYItIPwXiBVo83+/9oySuKZCrz4T+yyZRFtLpxxDScvtYDt7e+J0eNElJ+AiA==",
+    "Microsoft.AspNetCore.App.Internal.Assets/10.0.9": {
+      "sha512": "E9Wp/LPKAYkGOVBv4lt5U5TnUA/7pov7QZAwF3eI64kK8AAXqkPDwuadEOwpL1WXEfgecYm0fccluvABp32D8g==",
       "type": "package",
-      "path": "microsoft.aspnetcore.app.internal.assets/10.0.13",
+      "path": "microsoft.aspnetcore.app.internal.assets/10.0.9",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -54,7 +54,7 @@
         "build/Microsoft.AspNetCore.App.Internal.Assets.targets",
         "buildMultiTargeting/Microsoft.AspNetCore.App.Internal.Assets.targets",
         "buildTransitive/Microsoft.AspNetCore.App.Internal.Assets.targets",
-        "microsoft.aspnetcore.app.internal.assets.10.0.13.nupkg.sha512",
+        "microsoft.aspnetcore.app.internal.assets.10.0.9.nupkg.sha512",
         "microsoft.aspnetcore.app.internal.assets.nuspec"
       ]
     },
@@ -88,24 +88,24 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "Microsoft.AspNetCore.App.Internal.Assets >= 10.0.13",
+      "Microsoft.AspNetCore.App.Internal.Assets >= 10.0.9",
       "MudBlazor >= 8.*"
     ]
   },
   "packageFolders": {
-    "/home/bangi18/.nuget/packages/": {}
+    "C:\\Users\\Bangison\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/EmployeeManagementSystem.csproj",
+      "projectUniqueName": "E:\\.Work Assignments\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj",
       "projectName": "EmployeeManagementSystem",
-      "projectPath": "/home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/EmployeeManagementSystem.csproj",
-      "packagesPath": "/home/bangi18/.nuget/packages/",
-      "outputPath": "/home/bangi18/Desktop/Blazor Apps/EmployeeManagementSystem/obj/",
+      "projectPath": "E:\\.Work Assignments\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj",
+      "packagesPath": "C:\\Users\\Bangison\\.nuget\\packages\\",
+      "outputPath": "E:\\.Work Assignments\\EmployeeManagementSystem\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/bangi18/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Bangison\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -115,6 +115,7 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {}
         }
@@ -129,16 +130,17 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net10.0": {
+        "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
           "Microsoft.AspNetCore.App.Internal.Assets": {
             "suppressParent": "All",
             "target": "Package",
-            "version": "[10.0.13, )",
+            "version": "[10.0.9, )",
             "autoReferenced": true
           },
           "MudBlazor": {
@@ -165,7 +167,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/var/snap/dotnet/common/dotnet/sdk/10.0.113/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
