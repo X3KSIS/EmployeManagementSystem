@@ -65,6 +65,10 @@
             "MudBlazor": {
               "target": "Package",
               "version": "[8.*, )"
+            },
+            "System.Security.Cryptography.Pkcs": {
+              "target": "Package",
+              "version": "[9.0.21, )"
             }
           },
           "imports": [

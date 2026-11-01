@@ -4,14 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementSystem.Services;
 
-/// <summary>
-/// SQL Server implementation (EF Core). Same contract as the in-memory version,
-/// so no page or component needed to change.
-/// </summary>
+
 public class EmployeeService : IEmployeeService
 {
-    // In Blazor Server a component can outlive many user actions, so a long-lived DbContext is unsafe.
-    // We take a factory and create a short-lived context per operation.
+ 
     private readonly IDbContextFactory<AppDbContext> _factory;
 
     public IReadOnlyList<string> Departments { get; } = new[]
@@ -24,7 +20,6 @@ public class EmployeeService : IEmployeeService
         _factory = factory;
     }
 
-    // ---------- Read ----------
 
     public async Task<IReadOnlyList<Employee>> GetEmployeesAsync(EmployeeFilter? filter = null)
     {
@@ -32,13 +27,11 @@ public class EmployeeService : IEmployeeService
 
         await using var db = await _factory.CreateDbContextAsync();
 
-        // AsNoTracking: we only read these, so EF doesn't need to watch them for changes.
         IQueryable<Employee> query = db.Employees.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             var term = filter.Search.Trim();
-            // SQL Server's default collation is case-insensitive, so this matches "john" and "JOHN".
             query = query.Where(e =>
                 (e.FirstName + " " + e.LastName).Contains(term) ||
                 e.Email.Contains(term));
@@ -70,7 +63,7 @@ public class EmployeeService : IEmployeeService
     public async Task<bool> EmailExistsAsync(string email, int? excludeEmployeeId = null)
     {
         var cleaned = email.Trim();
-        var excludeId = excludeEmployeeId ?? 0; // ids start at 1, so 0 excludes nobody
+        var excludeId = excludeEmployeeId ?? 0;
 
         await using var db = await _factory.CreateDbContextAsync();
         return await db.Employees.AnyAsync(e => e.Id != excludeId && e.Email == cleaned);
@@ -82,7 +75,6 @@ public class EmployeeService : IEmployeeService
 
         var total = await db.Employees.CountAsync();
 
-        // Cast to decimal? so an empty table gives null instead of throwing.
         var average = await db.Employees.Select(e => (decimal?)e.Salary).AverageAsync() ?? 0m;
 
         var onLeave = await db.Employees.CountAsync(e => e.Status == EmployeeStatus.OnLeave);
@@ -94,8 +86,6 @@ public class EmployeeService : IEmployeeService
     public async Task<IReadOnlyList<DepartmentSummary>> GetDepartmentSummariesAsync()
     {
         await using var db = await _factory.CreateDbContextAsync();
-
-        // GroupBy is translated to a SQL GROUP BY, so the database does the maths.
         return await db.Employees
             .GroupBy(e => e.Department)
             .Select(g => new DepartmentSummary(
@@ -107,12 +97,11 @@ public class EmployeeService : IEmployeeService
             .ToListAsync();
     }
 
-    // ---------- Create / Update / Delete ----------
 
     public async Task<Employee> AddAsync(Employee employee)
     {
         Normalize(employee);
-        employee.Id = 0; // let SQL Server generate the identity value
+        employee.Id = 0;
 
         await using var db = await _factory.CreateDbContextAsync();
         db.Employees.Add(employee);

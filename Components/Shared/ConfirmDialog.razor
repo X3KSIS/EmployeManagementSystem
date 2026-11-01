@@ -15,7 +15,6 @@
     [Parameter] public string Message { get; set; } = string.Empty;
     [Parameter] public string ConfirmText { get; set; } = "Delete";
 
-    // EventCallback = how a child component tells its parent "something happened".
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 }

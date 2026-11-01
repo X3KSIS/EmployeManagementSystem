@@ -28,17 +28,15 @@ else
 }
 
 @code {
-    // Value from the route: /employees/edit/{Id}
     [Parameter] public int Id { get; set; }
 
     private Employee? _employee;
     private bool _loading = true;
 
-    // Runs whenever route parameters change (also covers the first load).
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
-        _employee = await EmployeeService.GetByIdAsync(Id); // a copy, safe to edit
+        _employee = await EmployeeService.GetByIdAsync(Id);
         _loading = false;
     }
 

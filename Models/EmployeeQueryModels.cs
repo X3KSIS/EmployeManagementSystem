@@ -8,7 +8,7 @@ public enum EmployeeSortOption
     SalaryDesc
 }
 
-/// <summary>What the list page asks the service for. Records are immutable and compare by value.</summary>
+
 public record EmployeeFilter(
     string? Search = null,
     string? Department = null,

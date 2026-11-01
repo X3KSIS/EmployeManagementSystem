@@ -5,7 +5,6 @@ namespace EmployeeManagementSystem.Data;
 
 public static class DbSeeder
 {
-    /// <summary>Adds sample employees, but only when the table is empty (so it runs once).</summary>
     public static async Task SeedAsync(AppDbContext db)
     {
         if (await db.Employees.AnyAsync())

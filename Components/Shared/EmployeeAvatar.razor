@@ -8,7 +8,6 @@
 
     [Parameter, EditorRequired] public string Initials { get; set; } = string.Empty;
 
-    /// <summary>Anything stable (the employee Id) so the same person always gets the same colour.</summary>
     [Parameter] public int ColorSeed { get; set; }
 
     [Parameter] public Size AvatarSize { get; set; } = Size.Medium;

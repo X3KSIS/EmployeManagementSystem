@@ -31,7 +31,7 @@ public class Employee
     [Range(1, 10_000_000, ErrorMessage = "Salary must be greater than zero")]
     public decimal Salary { get; set; }
 
-    // Extra fields to match the design (job title under the name, status chip).
+
     [Required(ErrorMessage = "Job title is required")]
     [StringLength(80)]
     public string JobTitle { get; set; } = string.Empty;
