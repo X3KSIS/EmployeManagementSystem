@@ -1,193 +1,153 @@
+using EmployeeManagementSystem.Data;
 using EmployeeManagementSystem.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementSystem.Services;
 
+/// <summary>
+/// SQL Server implementation (EF Core). Same contract as the in-memory version,
+/// so no page or component needed to change.
+/// </summary>
 public class EmployeeService : IEmployeeService
 {
-    private readonly List<Employee> _employees = new();
-    private readonly object _sync = new(); // the service is a singleton, so guard shared state
-    private int _nextId = 1;
+    // In Blazor Server a component can outlive many user actions, so a long-lived DbContext is unsafe.
+    // We take a factory and create a short-lived context per operation.
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
     public IReadOnlyList<string> Departments { get; } = new[]
     {
-        "Engineering", "Product", "IT", "Human Resources", "Finance", "Marketing", "Sales"
+        "IT", "Legal", "Operations", "Human Resources", "Finance", "Marketing", "Sales"
     };
 
-    public EmployeeService()
+    public EmployeeService(IDbContextFactory<AppDbContext> factory)
     {
-        Seed();
+        _factory = factory;
     }
 
     // ---------- Read ----------
 
-    public Task<IReadOnlyList<Employee>> GetEmployeesAsync(EmployeeFilter? filter = null)
+    public async Task<IReadOnlyList<Employee>> GetEmployeesAsync(EmployeeFilter? filter = null)
     {
         filter ??= new EmployeeFilter();
 
-        List<Employee> snapshot;
-        lock (_sync)
-        {
-            // Hand out copies so components can never modify the stored objects by accident.
-            snapshot = _employees.Select(e => e.Clone()).ToList();
-        }
+        await using var db = await _factory.CreateDbContextAsync();
 
-        IEnumerable<Employee> query = snapshot;
+        // AsNoTracking: we only read these, so EF doesn't need to watch them for changes.
+        IQueryable<Employee> query = db.Employees.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             var term = filter.Search.Trim();
+            // SQL Server's default collation is case-insensitive, so this matches "john" and "JOHN".
             query = query.Where(e =>
-                e.FullName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                e.Email.Contains(term, StringComparison.OrdinalIgnoreCase));
+                (e.FirstName + " " + e.LastName).Contains(term) ||
+                e.Email.Contains(term));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Department))
         {
-            query = query.Where(e => e.Department == filter.Department);
+            var department = filter.Department;
+            query = query.Where(e => e.Department == department);
         }
 
-        IEnumerable<Employee> sorted = filter.Sort switch
+        IQueryable<Employee> sorted = filter.Sort switch
         {
-            EmployeeSortOption.NameDesc => query
-                .OrderByDescending(e => e.FirstName, StringComparer.OrdinalIgnoreCase)
-                .ThenByDescending(e => e.LastName, StringComparer.OrdinalIgnoreCase),
+            EmployeeSortOption.NameDesc => query.OrderByDescending(e => e.FirstName).ThenByDescending(e => e.LastName),
             EmployeeSortOption.SalaryAsc => query.OrderBy(e => e.Salary),
             EmployeeSortOption.SalaryDesc => query.OrderByDescending(e => e.Salary),
-            _ => query
-                .OrderBy(e => e.FirstName, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(e => e.LastName, StringComparer.OrdinalIgnoreCase)
+            _ => query.OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
         };
 
-        return Task.FromResult<IReadOnlyList<Employee>>(sorted.ToList());
+        return await sorted.ToListAsync();
     }
 
-    public Task<Employee?> GetByIdAsync(int id)
+    public async Task<Employee?> GetByIdAsync(int id)
     {
-        lock (_sync)
-        {
-            var found = _employees.FirstOrDefault(e => e.Id == id);
-            return Task.FromResult(found?.Clone());
-        }
+        await using var db = await _factory.CreateDbContextAsync();
+        return await db.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public Task<bool> EmailExistsAsync(string email, int? excludeEmployeeId = null)
+    public async Task<bool> EmailExistsAsync(string email, int? excludeEmployeeId = null)
     {
-        lock (_sync)
-        {
-            var exists = _employees.Any(e =>
-                e.Id != excludeEmployeeId &&
-                string.Equals(e.Email, email.Trim(), StringComparison.OrdinalIgnoreCase));
-            return Task.FromResult(exists);
-        }
+        var cleaned = email.Trim();
+        var excludeId = excludeEmployeeId ?? 0; // ids start at 1, so 0 excludes nobody
+
+        await using var db = await _factory.CreateDbContextAsync();
+        return await db.Employees.AnyAsync(e => e.Id != excludeId && e.Email == cleaned);
     }
 
-    public Task<EmployeeStats> GetStatsAsync()
+    public async Task<EmployeeStats> GetStatsAsync()
     {
-        lock (_sync)
-        {
-            var total = _employees.Count;
-            var average = total == 0 ? 0m : _employees.Average(e => e.Salary);
-            var onLeave = _employees.Count(e => e.Status == EmployeeStatus.OnLeave);
-            var departments = _employees.Select(e => e.Department).Distinct().Count();
-            return Task.FromResult(new EmployeeStats(total, average, onLeave, departments));
-        }
+        await using var db = await _factory.CreateDbContextAsync();
+
+        var total = await db.Employees.CountAsync();
+
+        // Cast to decimal? so an empty table gives null instead of throwing.
+        var average = await db.Employees.Select(e => (decimal?)e.Salary).AverageAsync() ?? 0m;
+
+        var onLeave = await db.Employees.CountAsync(e => e.Status == EmployeeStatus.OnLeave);
+        var departments = await db.Employees.Select(e => e.Department).Distinct().CountAsync();
+
+        return new EmployeeStats(total, average, onLeave, departments);
     }
 
-    public Task<IReadOnlyList<DepartmentSummary>> GetDepartmentSummariesAsync()
+    public async Task<IReadOnlyList<DepartmentSummary>> GetDepartmentSummariesAsync()
     {
-        lock (_sync)
-        {
-            var summaries = _employees
-                .GroupBy(e => e.Department)
-                .Select(g => new DepartmentSummary(
-                    g.Key,
-                    g.Count(),
-                    g.Average(e => e.Salary),
-                    g.Sum(e => e.Salary)))
-                .OrderBy(s => s.Name)
-                .ToList();
+        await using var db = await _factory.CreateDbContextAsync();
 
-            return Task.FromResult<IReadOnlyList<DepartmentSummary>>(summaries);
-        }
+        // GroupBy is translated to a SQL GROUP BY, so the database does the maths.
+        return await db.Employees
+            .GroupBy(e => e.Department)
+            .Select(g => new DepartmentSummary(
+                g.Key,
+                g.Count(),
+                g.Average(e => e.Salary),
+                g.Sum(e => e.Salary)))
+            .OrderBy(s => s.Name)
+            .ToListAsync();
     }
 
     // ---------- Create / Update / Delete ----------
 
-    public Task<Employee> AddAsync(Employee employee)
+    public async Task<Employee> AddAsync(Employee employee)
     {
-        lock (_sync)
-        {
-            var toStore = Normalize(employee.Clone());
-            toStore.Id = _nextId++;
-            _employees.Add(toStore);
-            return Task.FromResult(toStore.Clone());
-        }
+        Normalize(employee);
+        employee.Id = 0; // let SQL Server generate the identity value
+
+        await using var db = await _factory.CreateDbContextAsync();
+        db.Employees.Add(employee);
+        await db.SaveChangesAsync();
+        return employee;
     }
 
-    public Task<bool> UpdateAsync(Employee employee)
+    public async Task<bool> UpdateAsync(Employee employee)
     {
-        lock (_sync)
-        {
-            var index = _employees.FindIndex(e => e.Id == employee.Id);
-            if (index < 0)
-            {
-                return Task.FromResult(false);
-            }
+        await using var db = await _factory.CreateDbContextAsync();
 
-            _employees[index] = Normalize(employee.Clone());
-            return Task.FromResult(true);
+        var existing = await db.Employees.FindAsync(employee.Id);
+        if (existing is null)
+        {
+            return false;
         }
+
+        Normalize(employee);
+        db.Entry(existing).CurrentValues.SetValues(employee);
+        await db.SaveChangesAsync();
+        return true;
     }
 
-    public Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        lock (_sync)
-        {
-            return Task.FromResult(_employees.RemoveAll(e => e.Id == id) > 0);
-        }
+        await using var db = await _factory.CreateDbContextAsync();
+        var rows = await db.Employees.Where(e => e.Id == id).ExecuteDeleteAsync();
+        return rows > 0;
     }
 
-
-
-    private static Employee Normalize(Employee e)
+    private static void Normalize(Employee e)
     {
         e.FirstName = e.FirstName.Trim();
         e.LastName = e.LastName.Trim();
         e.Email = e.Email.Trim();
         e.JobTitle = e.JobTitle.Trim();
-        return e;
-    }
-
-    private void Seed()
-    {
-        var seed = new[]
-        {
-            New("Chomba", "Sikazwe", "Engineering", "Chemical Engineer", 7500, EmployeeStatus.Active),
-            New("Mary", "Mulenga", "Product", "Product Manager", 8200, EmployeeStatus.Active),
-            New("Alex", "Mwansa", "IT", "System Administrator", 6500, EmployeeStatus.OnLeave),
-            New("Rachel", "Mwenya", "Human Resources", "HR Specialist", 5800, EmployeeStatus.Active),
-            New("David", "Mutale", "Engineering", "DevOps Engineer", 7800, EmployeeStatus.Active),
-            New("Grace", "Banda", "Finance", "Accountant", 6100, EmployeeStatus.Active),
-            New("Peter", "Mwansa", "Sales", "Sales Executive", 5400, EmployeeStatus.Active),
-            New("Linda", "Phiri", "Marketing", "Marketing Lead", 6900, EmployeeStatus.Inactive)
-        };
-
-        foreach (var e in seed)
-        {
-            e.Id = _nextId++;
-            _employees.Add(e);
-        }
-
-        static Employee New(string first, string last, string dept, string title, decimal salary, EmployeeStatus status) => new()
-        {
-            FirstName = first,
-            LastName = last,
-            Department = dept,
-            JobTitle = title,
-            Salary = salary,
-            Status = status,
-            Email = $"{first}.{last}@bangison.com".ToLowerInvariant(),
-            DateHired = DateTime.Today.AddMonths(-Random.Shared.Next(2, 48))
-        };
     }
 }

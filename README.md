@@ -1,6 +1,6 @@
 # Employee Management System (Blazor Web App + MudBlazor)
 
-Blazor Web App, **Interactive Server** rendering, MudBlazor UI, in-memory data service.
+Blazor Web App, **Interactive Server** rendering, MudBlazor UI, SQL Server.
 
 ## Run it
 
@@ -10,20 +10,9 @@ dotnet restore
 dotnet run
 ```
 
-Open the URL printed in the terminal (e.g. https://localhost:5001). `Program.cs` targets **net8.0**; if you
-have a newer SDK, change `<TargetFramework>` in the `.csproj` (net9.0 / net10.0).
+Open the URL printed in the terminal (e.g. https://localhost:5001). `Program.cs` targets **net10.0**; if you
+have a newer SDK, change `<TargetFramework>` in the `.csproj` (version).
 
-## Folder layout
-
-```
-Models/        Employee, EmployeeStatus, filter/stat records
-Services/      IEmployeeService + EmployeeService (all business logic, in memory)
-Helpers/       Formatters (money, status text)
-Components/
-  Layout/      MainLayout (sidebar + top bar), NavMenu
-  Shared/      Reusable: EmployeeForm, StatCard, StatusChip, EmployeeAvatar, DetailItem, ConfirmDialog
-  Pages/       Home, Employees, AddEmployee, EditEmployee, EmployeeDetails, Departments
-```
 
 ## Requirement checklist
 
@@ -38,7 +27,7 @@ Components/
 | Dependency injection | `Program.cs` registration, `@inject` in pages |
 | Async | Every service method returns `Task` |
 
-## Concepts to be ready to explain
+## Concepts to learn
 
 - **Render mode**: Interactive Server runs component code on the server; UI events and DOM diffs travel over a SignalR connection.
 - **Components & parameters**: `[Parameter]` passes data down, `EventCallback` sends events up (`EmployeeForm`, `ConfirmDialog`).
@@ -50,8 +39,3 @@ Components/
 - **Routing**: `@page "/employees/{Id:int}"`; the `:int` constraint stops it from clashing with `/employees/add`.
 - **C#**: records, LINQ (`Where`/`OrderBy`/`GroupBy`), switch expressions, nullable reference types, `lock`, `async/await`, `MemberwiseClone`.
 - **Why copies?** The service returns clones, so cancelling an edit never changes the stored employee.
-
-## Next step (optional enhancement)
-
-Swap `EmployeeService` for an EF Core + SQLite implementation of the same `IEmployeeService`
-(`Microsoft.EntityFrameworkCore.Sqlite`, an `AppDbContext`, `AddDbContextFactory`, register as Scoped).

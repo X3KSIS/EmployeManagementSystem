@@ -1,5 +1,7 @@
 using EmployeeManagementSystem.Components;
+using EmployeeManagementSystem.Data;
 using EmployeeManagementSystem.Services;
+using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,13 +13,25 @@ builder.Services.AddRazorComponents()
 // Registers MudBlazor's services (ISnackbar, IDialogService, ...).
 builder.Services.AddMudServices();
 
+// EF Core + SQL Server. A DbContext *factory* is the recommended pattern for Blazor Server.
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 // Dependency injection: components ask for IEmployeeService and never see the concrete class.
-// Singleton = ONE instance for the whole app, so the in-memory list survives page navigation
-// and is shared by every browser tab. (A DbContext-backed service would be Scoped instead.)
-builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
+// To go back to the in-memory list, register InMemoryEmployeeService (as a Singleton) instead.
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<AppSettingsService>();
 
 var app = builder.Build();
+
+// On startup: apply any pending migrations (creates the database and tables on first run), then seed sample data.
+using (var scope = app.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
+    await using var db = await factory.CreateDbContextAsync();
+    await db.Database.MigrateAsync();
+    await DbSeeder.SeedAsync(db);
+}
 
 if (!app.Environment.IsDevelopment())
 {

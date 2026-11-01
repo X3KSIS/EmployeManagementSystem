@@ -52,6 +52,16 @@
               "version": "[10.0.9, )",
               "autoReferenced": true
             },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[10.*, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[10.*, )"
+            },
             "MudBlazor": {
               "target": "Package",
               "version": "[8.*, )"
