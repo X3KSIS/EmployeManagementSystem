@@ -6,8 +6,10 @@ Blazor Web App, **Interactive Server** rendering, MudBlazor UI, SQL Server.
 
 ```bash
 cd EmployeeManagementSystem
+dotnet tool install --global dotnet-ef
 dotnet restore
-dotnet run
+dotnet ef migrations add InitialCreate
+dotnet run --launch-profile https
 ```
 
 Open the URL printed in the terminal (e.g. https://localhost:5001). `Program.cs` targets **net10.0**; if you
