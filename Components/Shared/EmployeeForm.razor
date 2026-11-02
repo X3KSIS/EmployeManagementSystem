@@ -22,11 +22,12 @@
         </MudItem>
 
         <MudItem xs="12" sm="6">
-            <MudSelect T="string" @bind-Value="Model.Department" For="@(() => Model.Department)"
+            <MudSelect T="int" @bind-Value="Model.DepartmentId" For="@(() => Model.DepartmentId)"
+                       ToStringFunc="DepartmentName"
                        Label="Department " Variant="Variant.Outlined">
                 @foreach (var dept in Departments)
                 {
-                    <MudSelectItem T="string" Value="@dept">@dept</MudSelectItem>
+                    <MudSelectItem T="int" Value="@dept.Id">@dept.Name</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>
@@ -62,11 +63,14 @@
     private bool _saving;
 
     [Parameter, EditorRequired] public Employee Model { get; set; } = new();
-    [Parameter, EditorRequired] public IReadOnlyList<string> Departments { get; set; } = Array.Empty<string>();
+    [Parameter, EditorRequired] public IReadOnlyList<Department> Departments { get; set; } = Array.Empty<Department>();
     [Parameter] public string SubmitText { get; set; } = "Save";
 
     [Parameter] public EventCallback<Employee> OnSubmit { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+
+    // DepartmentId 0 means "not chosen yet" and shows as an empty field.
+    private string DepartmentName(int id) => Departments.FirstOrDefault(d => d.Id == id)?.Name ?? string.Empty;
 
     // Only runs when every DataAnnotations rule passes.
     private async Task HandleValidSubmit()

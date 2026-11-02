@@ -19,6 +19,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<AppSettingsService>();
 
 var app = builder.Build();

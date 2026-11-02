@@ -1,5 +1,6 @@
 @page "/"
 @inject IEmployeeService EmployeeService
+@inject IDepartmentService DepartmentService
 
 <PageTitle>EMS | Dashboard</PageTitle>
 
@@ -23,6 +24,14 @@
     </MudItem>
 </MudGrid>
 
+<MudPaper Outlined="true" Class="pa-4 rounded-lg mb-4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+        <MudText Typo="Typo.h6" Class="font-weight-bold">Employees per department</MudText>
+        <MudButton Href="/reports" Color="Color.Primary">View report</MudButton>
+    </MudStack>
+    <DepartmentHeadcountChart Summaries="_departments" />
+</MudPaper>
+
 <MudPaper Outlined="true" Class="pa-4 rounded-lg">
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
         <MudText Typo="Typo.h6" Class="font-weight-bold">Recently Added</MudText>
@@ -36,7 +45,7 @@
             <div class="flex-grow-1">
                 <MudLink Href="@($"/employees/{e.Id}")" Typo="Typo.subtitle2" Color="Color.Inherit"
                          Class="font-weight-bold">@e.FullName</MudLink>
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@e.JobTitle · @e.Department</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@e.JobTitle · @e.Department?.Name</MudText>
             </div>
             <StatusChip Status="@e.Status" />
         </MudStack>
@@ -46,11 +55,12 @@
 @code {
     private EmployeeStats _stats = new(0, 0m, 0, 0);
     private IReadOnlyList<Employee> _recent = Array.Empty<Employee>();
+    private IReadOnlyList<DepartmentSummary> _departments = Array.Empty<DepartmentSummary>();
 
     protected override async Task OnInitializedAsync()
     {
         _stats = await EmployeeService.GetStatsAsync();
-        var all = await EmployeeService.GetEmployeesAsync();
-        _recent = all.OrderByDescending(e => e.Id).Take(5).ToList();
+        _recent = await EmployeeService.GetRecentAsync(5);
+        _departments = await DepartmentService.GetSummariesAsync();
     }
 }

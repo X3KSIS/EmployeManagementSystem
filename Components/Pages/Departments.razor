@@ -1,30 +1,187 @@
 @page "/departments"
-@inject IEmployeeService EmployeeService
+@inject IDepartmentService DepartmentService
+@inject ISnackbar Snackbar
 
 <PageTitle>EMS | Departments</PageTitle>
 
 <MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Departments</MudText>
 
+@* Add / edit form. The same form switches to edit mode when a row's Edit button is clicked. *@
+<MudPaper Outlined="true" Class="pa-6 rounded-lg mb-4">
+    <MudText Typo="Typo.h6" Class="font-weight-bold mb-3">
+        @(IsEditing ? $"Edit {_editingOriginalName}" : "Add Department")
+    </MudText>
+
+    <EditForm Model="_form" OnValidSubmit="SaveAsync">
+        <DataAnnotationsValidator />
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="4">
+                <MudTextField T="string" @bind-Value="_form.Name" For="@(() => _form.Name)"
+                              Label="Name" Variant="Variant.Outlined" Immediate="true" />
+            </MudItem>
+            <MudItem xs="12" md="8">
+                <MudTextField T="string" @bind-Value="_form.Description" For="@(() => _form.Description)"
+                              Label="Description (optional)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+                    @if (IsEditing)
+                    {
+                        <MudButton Variant="Variant.Outlined" OnClick="ResetForm">Cancel</MudButton>
+                    }
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@(IsEditing ? Icons.Material.Filled.Save : Icons.Material.Filled.Add)"
+                               Disabled="_saving">
+                        @(IsEditing ? "Save Changes" : "Add Department")
+                    </MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+</MudPaper>
+
 <MudPaper Outlined="true" Class="rounded-lg ems-table">
-    <MudTable T="DepartmentSummary" Items="_summaries" Hover="true" Elevation="0">
+    <MudTable T="DepartmentSummary" Items="_summaries" Hover="true" Elevation="0" Loading="_loading"
+              Breakpoint="Breakpoint.Sm">
         <HeaderContent>
             <MudTh>Department</MudTh>
             <MudTh>Employees</MudTh>
             <MudTh>Average Salary</MudTh>
             <MudTh>Total Payroll</MudTh>
+            <MudTh>Actions</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Department">@context.Name</MudTd>
+            <MudTd DataLabel="Department">
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@context.Name</MudText>
+                @if (!string.IsNullOrWhiteSpace(context.Description))
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@context.Description</MudText>
+                }
+            </MudTd>
             <MudTd DataLabel="Employees">@context.EmployeeCount</MudTd>
             <MudTd DataLabel="Average Salary">@Formatters.Money(context.AverageSalary)</MudTd>
             <MudTd DataLabel="Total Payroll">@Formatters.Money(context.TotalPayroll)</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudStack Row="true" Spacing="1">
+                    <MudTooltip Text="Edit department">
+                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Small"
+                                       OnClick="@(() => StartEdit(context))" />
+                    </MudTooltip>
+                    @* A disabled button gets no mouse events, so the tooltip wraps it and still shows on hover. *@
+                    <MudTooltip Text="@DeleteTooltip(context)">
+                        <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" Color="Color.Error"
+                                       Disabled="@(context.EmployeeCount > 0)"
+                                       OnClick="@(() => _departmentToDelete = context)" />
+                    </MudTooltip>
+                </MudStack>
+            </MudTd>
         </RowTemplate>
+        <NoRecordsContent>
+            <MudText Class="pa-6" Color="Color.Secondary">No departments yet. Add one above.</MudText>
+        </NoRecordsContent>
     </MudTable>
 </MudPaper>
 
+<ConfirmDialog Visible="@(_departmentToDelete is not null)"
+               Title="Delete department?"
+               Message="@($"This will permanently remove the {_departmentToDelete?.Name} department.")"
+               OnConfirm="DeleteConfirmedAsync"
+               OnCancel="@(() => _departmentToDelete = null)" />
+
 @code {
     private IReadOnlyList<DepartmentSummary> _summaries = Array.Empty<DepartmentSummary>();
+    private bool _loading = true;
+    private bool _saving;
 
-    protected override async Task OnInitializedAsync()
-        => _summaries = await EmployeeService.GetDepartmentSummariesAsync();
+    private Department _form = new();
+    private string? _editingOriginalName;
+    private DepartmentSummary? _departmentToDelete;
+
+    private bool IsEditing => _form.Id != 0;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _summaries = await DepartmentService.GetSummariesAsync();
+        _loading = false;
+    }
+
+    private static string DeleteTooltip(DepartmentSummary d) => d.EmployeeCount switch
+    {
+        0 => "Delete department",
+        1 => "Can't delete: 1 employee is still in this department",
+        var n => $"Can't delete: {n} employees are still in this department"
+    };
+
+    private void StartEdit(DepartmentSummary d)
+    {
+        _form = new Department { Id = d.Id, Name = d.Name, Description = d.Description };
+        _editingOriginalName = d.Name;
+    }
+
+    private void ResetForm()
+    {
+        _form = new Department();
+        _editingOriginalName = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        try
+        {
+            if (await DepartmentService.NameExistsAsync(_form.Name, excludeDepartmentId: IsEditing ? _form.Id : null))
+            {
+                Snackbar.Add($"A department named \"{_form.Name.Trim()}\" already exists.", Severity.Error);
+                return;
+            }
+
+            if (IsEditing)
+            {
+                var updated = await DepartmentService.UpdateAsync(_form);
+                Snackbar.Add(updated ? $"{_form.Name.Trim()} was updated." : "Department no longer exists.",
+                             updated ? Severity.Success : Severity.Warning);
+            }
+            else
+            {
+                var created = await DepartmentService.AddAsync(_form);
+                Snackbar.Add($"{created.Name} was added.", Severity.Success);
+            }
+
+            ResetForm();
+            await LoadAsync();
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteConfirmedAsync()
+    {
+        if (_departmentToDelete is null) return;
+
+        var target = _departmentToDelete;
+        _departmentToDelete = null;
+
+        var result = await DepartmentService.DeleteAsync(target.Id);
+        switch (result)
+        {
+            case DepartmentDeleteResult.Deleted:
+                Snackbar.Add($"{target.Name} was deleted.", Severity.Success);
+                if (_form.Id == target.Id) ResetForm();
+                break;
+            case DepartmentDeleteResult.HasEmployees:
+                Snackbar.Add($"{target.Name} still has employees, so it was not deleted.", Severity.Error);
+                break;
+            default:
+                Snackbar.Add("Department could not be found.", Severity.Warning);
+                break;
+        }
+
+        await LoadAsync();
+    }
 }

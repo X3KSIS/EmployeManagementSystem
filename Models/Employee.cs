@@ -21,8 +21,10 @@ public class Employee
     [StringLength(50, ErrorMessage = "Last name can be at most 50 characters")]
     public string LastName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Please select a department")]
-    public string Department { get; set; } = string.Empty;
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a department")]
+    public int DepartmentId { get; set; }
+
+    public Department? Department { get; set; }
 
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Enter a valid email address")]

@@ -8,11 +8,6 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public IReadOnlyList<string> Departments { get; } = new[]
-    {
-        "IT", "Operations", "Legal", "Human Resources", "Finance", "Marketing", "Sales"
-    };
-
     public EmployeeService(IDbContextFactory<AppDbContext> factory)
     {
         _factory = factory;
@@ -20,14 +15,17 @@ public class EmployeeService : IEmployeeService
 
 
 
-    public async Task<IReadOnlyList<Employee>> GetEmployeesAsync(EmployeeFilter? filter = null)
+    public const int MaxPageSize = 100;
+
+    public async Task<PagedResult<Employee>> GetEmployeesAsync(EmployeeFilter? filter = null)
     {
         filter ??= new EmployeeFilter();
+        var pageSize = Math.Clamp(filter.PageSize, 1, MaxPageSize);
 
         await using var db = await _factory.CreateDbContextAsync();
 
         
-        IQueryable<Employee> query = db.Employees.AsNoTracking();
+        IQueryable<Employee> query = db.Employees.AsNoTracking().Include(e => e.Department);
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
@@ -37,27 +35,58 @@ public class EmployeeService : IEmployeeService
                 e.Email.Contains(term));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.Department))
+        if (filter.DepartmentId is int departmentId)
         {
-            var department = filter.Department;
-            query = query.Where(e => e.Department == department);
+            query = query.Where(e => e.DepartmentId == departmentId);
         }
 
+        if (filter.Status is EmployeeStatus status)
+        {
+            query = query.Where(e => e.Status == status);
+        }
+
+        // Count after search/filter so the total matches what the user is paging through.
+        var total = await query.CountAsync();
+
+        // If the requested page no longer exists (e.g. the last row on the last page was deleted),
+        // fall back to the last page that does.
+        var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+        var page = Math.Clamp(filter.Page, 1, pageCount);
+
+        // Id is the final tie-breaker so Skip/Take is stable: rows with equal names or salaries
+        // must not jump between pages.
         IQueryable<Employee> sorted = filter.Sort switch
         {
-            EmployeeSortOption.NameDesc => query.OrderByDescending(e => e.FirstName).ThenByDescending(e => e.LastName),
-            EmployeeSortOption.SalaryAsc => query.OrderBy(e => e.Salary),
-            EmployeeSortOption.SalaryDesc => query.OrderByDescending(e => e.Salary),
-            _ => query.OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
+            EmployeeSortOption.NameDesc => query.OrderByDescending(e => e.FirstName).ThenByDescending(e => e.LastName).ThenBy(e => e.Id),
+            EmployeeSortOption.SalaryAsc => query.OrderBy(e => e.Salary).ThenBy(e => e.Id),
+            EmployeeSortOption.SalaryDesc => query.OrderByDescending(e => e.Salary).ThenBy(e => e.Id),
+            _ => query.OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ThenBy(e => e.Id)
         };
 
-        return await sorted.ToListAsync();
+        var items = await sorted
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<Employee>(items, total, page, pageSize);
+    }
+
+    public async Task<IReadOnlyList<Employee>> GetRecentAsync(int count)
+    {
+        await using var db = await _factory.CreateDbContextAsync();
+        return await db.Employees.AsNoTracking()
+            .Include(e => e.Department)
+            .OrderByDescending(e => e.Id)
+            .Take(count)
+            .ToListAsync();
     }
 
     public async Task<Employee?> GetByIdAsync(int id)
     {
         await using var db = await _factory.CreateDbContextAsync();
-        return await db.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+        return await db.Employees.AsNoTracking()
+            .Include(e => e.Department)
+            .FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<bool> EmailExistsAsync(string email, int? excludeEmployeeId = null)
@@ -79,38 +108,16 @@ public class EmployeeService : IEmployeeService
         var average = await db.Employees.Select(e => (decimal?)e.Salary).AverageAsync() ?? 0m;
 
         var onLeave = await db.Employees.CountAsync(e => e.Status == EmployeeStatus.OnLeave);
-        var departments = await db.Employees.Select(e => e.Department).Distinct().CountAsync();
+        var departments = await db.Departments.CountAsync();
 
         return new EmployeeStats(total, average, onLeave, departments);
     }
-
-    public async Task<IReadOnlyList<DepartmentSummary>> GetDepartmentSummariesAsync()
-    {
-        await using var db = await _factory.CreateDbContextAsync();
-        var rows = await db.Employees
-            .AsNoTracking()
-            .GroupBy(e => e.Department)
-            .Select(g => new
-            {
-                Name = g.Key,
-                Count = g.Count(),
-                Average = g.Average(e => e.Salary),
-                Total = g.Sum(e => e.Salary)
-            })
-            .OrderBy(x => x.Name)
-            .ToListAsync();
-
-        
-        return rows
-            .Select(x => new DepartmentSummary(x.Name, x.Count, x.Average, x.Total))
-            .ToList();
-    }
-
 
     public async Task<Employee> AddAsync(Employee employee)
     {
         Normalize(employee);
         employee.Id = 0;
+        employee.Department = null; // link by DepartmentId only; never insert the navigation
 
         await using var db = await _factory.CreateDbContextAsync();
         db.Employees.Add(employee);
@@ -139,6 +146,19 @@ public class EmployeeService : IEmployeeService
         await using var db = await _factory.CreateDbContextAsync();
         var rows = await db.Employees.Where(e => e.Id == id).ExecuteDeleteAsync();
         return rows > 0;
+    }
+
+    public async Task<int> DeleteManyAsync(IEnumerable<int> ids)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0)
+        {
+            return 0;
+        }
+
+        // One DELETE ... WHERE Id IN (...) statement, so either all rows go or none do.
+        await using var db = await _factory.CreateDbContextAsync();
+        return await db.Employees.Where(e => idList.Contains(e.Id)).ExecuteDeleteAsync();
     }
 
     private static void Normalize(Employee e)

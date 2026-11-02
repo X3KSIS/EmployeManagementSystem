@@ -1,5 +1,6 @@
 @page "/employees/edit/{Id:int}"
 @inject IEmployeeService EmployeeService
+@inject IDepartmentService DepartmentService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -20,7 +21,7 @@ else
 {
     <MudPaper Outlined="true" Class="pa-6 rounded-lg">
         <EmployeeForm Model="_employee"
-                      Departments="EmployeeService.Departments"
+                      Departments="_departments"
                       SubmitText="Update Employee"
                       OnSubmit="SaveAsync"
                       OnCancel="GoBack" />
@@ -31,11 +32,13 @@ else
     [Parameter] public int Id { get; set; }
 
     private Employee? _employee;
+    private IReadOnlyList<Department> _departments = Array.Empty<Department>();
     private bool _loading = true;
 
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
+        _departments = await DepartmentService.GetAllAsync();
         _employee = await EmployeeService.GetByIdAsync(Id);
         _loading = false;
     }

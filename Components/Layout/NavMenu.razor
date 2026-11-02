@@ -1,4 +1,3 @@
-@inject ISnackbar Snackbar
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Home">
         Dashboard
@@ -23,7 +22,7 @@
 
     <MudNavGroup Title="More" Icon="@Icons.Material.Outlined.MoreHoriz" Expanded="false">
 
-        <MudNavLink OnClick="OnReportsClick"
+        <MudNavLink Href="/reports" Match="NavLinkMatch.All"
                     Icon="@Icons.Material.Outlined.Description">
             Reports
         </MudNavLink>
@@ -35,10 +34,3 @@
     </MudNavGroup>
 </MudNavMenu>
 
-@code{
-    private void OnReportsClick()
-    {
-        Snackbar.Add("Reports is not implemented yet.", Severity.Info);
-    }
-    
-}
