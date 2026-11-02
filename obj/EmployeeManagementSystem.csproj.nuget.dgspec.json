@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\.Work Assignments\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj": {}
+    "C:\\Users\\Bangison\\Desktop\\Projects\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj": {}
   },
   "projects": {
-    "E:\\.Work Assignments\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj": {
+    "C:\\Users\\Bangison\\Desktop\\Projects\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\.Work Assignments\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj",
+        "projectUniqueName": "C:\\Users\\Bangison\\Desktop\\Projects\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj",
         "projectName": "EmployeeManagementSystem",
-        "projectPath": "E:\\.Work Assignments\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj",
+        "projectPath": "C:\\Users\\Bangison\\Desktop\\Projects\\EmployeeManagementSystem\\EmployeeManagementSystem.csproj",
         "packagesPath": "C:\\Users\\Bangison\\.nuget\\packages\\",
-        "outputPath": "E:\\.Work Assignments\\EmployeeManagementSystem\\obj\\",
+        "outputPath": "C:\\Users\\Bangison\\Desktop\\Projects\\EmployeeManagementSystem\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Bangison\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -39,7 +39,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
@@ -49,7 +49,7 @@
             "Microsoft.AspNetCore.App.Internal.Assets": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.9, )",
+              "version": "[10.0.14, )",
               "autoReferenced": true
             },
             "Microsoft.EntityFrameworkCore.Design": {
@@ -90,7 +90,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.403/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

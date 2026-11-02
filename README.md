@@ -2,7 +2,7 @@
 
 Blazor Web App, **Interactive Server** rendering, MudBlazor UI, SQL Server.
 
-## Run it
+## Run
 
 ```bash
 cd EmployeeManagementSystem

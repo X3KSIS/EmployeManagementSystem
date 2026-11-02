@@ -13,12 +13,11 @@ builder.Services.AddRazorComponents()
 // Registers MudBlazor's services (ISnackbar, IDialogService, ...).
 builder.Services.AddMudServices();
 
-// EF Core + SQL Server. A DbContext *factory* is the recommended pattern for Blazor Server.
+
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Dependency injection: components ask for IEmployeeService and never see the concrete class.
-// To go back to the in-memory list, register InMemoryEmployeeService (as a Singleton) instead.
+
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<AppSettingsService>();
 
@@ -41,7 +40,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 
-// .NET 9/10: serves wwwroot AND package files such as _content/MudBlazor/*
+
 app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
