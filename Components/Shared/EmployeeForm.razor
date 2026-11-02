@@ -4,26 +4,26 @@
     <MudGrid Spacing="3">
         <MudItem xs="12" sm="6">
             <MudTextField T="string" @bind-Value="Model.FirstName" For="@(() => Model.FirstName)"
-                          Label="First Name *" Variant="Variant.Outlined" Immediate="true" />
+                          Label="First Name " Variant="Variant.Outlined" Immediate="true" />
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudTextField T="string" @bind-Value="Model.LastName" For="@(() => Model.LastName)"
-                          Label="Last Name *" Variant="Variant.Outlined" Immediate="true" />
+                          Label="Last Name " Variant="Variant.Outlined" Immediate="true" />
         </MudItem>
 
         <MudItem xs="12" sm="6">
             <MudTextField T="string" @bind-Value="Model.Email" For="@(() => Model.Email)"
-                          Label="Email *" InputType="InputType.Email" Variant="Variant.Outlined"
+                          Label="Email " InputType="InputType.Email" Variant="Variant.Outlined"
                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Email" />
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudTextField T="string" @bind-Value="Model.JobTitle" For="@(() => Model.JobTitle)"
-                          Label="Job Title *" Variant="Variant.Outlined" />
+                          Label="Job Title " Variant="Variant.Outlined" />
         </MudItem>
 
         <MudItem xs="12" sm="6">
             <MudSelect T="string" @bind-Value="Model.Department" For="@(() => Model.Department)"
-                       Label="Department *" Variant="Variant.Outlined">
+                       Label="Department " Variant="Variant.Outlined">
                 @foreach (var dept in Departments)
                 {
                     <MudSelectItem T="string" Value="@dept">@dept</MudSelectItem>
@@ -32,7 +32,7 @@
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudNumericField T="decimal" @bind-Value="Model.Salary" For="@(() => Model.Salary)"
-                             Label="Salary *" Variant="Variant.Outlined" HideSpinButtons="true"
+                             Label="Salary " Variant="Variant.Outlined" HideSpinButtons="true"
                              Adornment="Adornment.Start" AdornmentText="K" />
         </MudItem>
 
