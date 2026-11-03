@@ -1,5 +1,6 @@
 @page "/reports"
 @inject IDepartmentService DepartmentService
+@inject IAppSettingsService Settings
 
 <PageTitle>EMS | Reports</PageTitle>
 
@@ -22,7 +23,8 @@ else
 
     @* The same numbers as a table, in the chart's order (largest first). *@
     <MudPaper Outlined="true" Class="rounded-lg ems-table">
-        <MudTable T="DepartmentSummary" Items="_ordered" Hover="true" Elevation="0" Breakpoint="Breakpoint.Sm">
+        <MudTable T="DepartmentSummary" Items="_ordered" Hover="true" Elevation="0" Breakpoint="Breakpoint.Sm"
+                  Dense="Settings.Current.IsCompact">
             <HeaderContent>
                 <MudTh>Department</MudTh>
                 <MudTh Style="text-align:right">Employees</MudTh>

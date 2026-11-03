@@ -22,6 +22,48 @@ namespace EmployeeManagementSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("EmployeeManagementSystem.Models.AppSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("DarkMode")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DefaultPageSize")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TableDensity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("WelcomeMessage")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CompanyName = "Bangison Ltd",
+                            DarkMode = false,
+                            DefaultPageSize = 10,
+                            TableDensity = "Comfortable",
+                            WelcomeMessage = "Welcome back"
+                        });
+                });
+
             modelBuilder.Entity("EmployeeManagementSystem.Models.Department", b =>
                 {
                     b.Property<int>("Id")

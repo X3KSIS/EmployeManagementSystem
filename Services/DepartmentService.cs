@@ -22,11 +22,34 @@ public class DepartmentService : IDepartmentService
     public async Task<IReadOnlyList<DepartmentSummary>> GetSummariesAsync()
     {
         await using var db = await _factory.CreateDbContextAsync();
+        return await ToSummariesAsync(db.Departments.AsNoTracking().OrderBy(d => d.Name).ThenBy(d => d.Id));
+    }
 
-        // Starts from Departments so empty departments are listed too (with zero employees).
-        var rows = await db.Departments
-            .AsNoTracking()
+    public async Task<PagedResult<DepartmentSummary>> GetSummaryPageAsync(int page, int pageSize)
+    {
+        pageSize = Math.Clamp(pageSize, 1, EmployeeService.MaxPageSize);
+
+        await using var db = await _factory.CreateDbContextAsync();
+        var total = await db.Departments.CountAsync();
+
+        // A page that no longer exists (e.g. the last department on the last page was deleted)
+        // falls back to the last page that does.
+        var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+        page = Math.Clamp(page, 1, pageCount);
+
+        var items = await ToSummariesAsync(db.Departments.AsNoTracking()
             .OrderBy(d => d.Name)
+            .ThenBy(d => d.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize));
+
+        return new PagedResult<DepartmentSummary>(items, total, page, pageSize);
+    }
+
+    // Starts from Departments so empty departments are listed too (with zero employees).
+    private static async Task<List<DepartmentSummary>> ToSummariesAsync(IQueryable<Department> departments)
+    {
+        var rows = await departments
             .Select(d => new
             {
                 d.Id,

@@ -1,9 +1,9 @@
 @inherits LayoutComponentBase
-@using EmployeeManagementSystem.Services
+@implements IDisposable
 @inject ISnackbar Snackbar
-@inject AppSettingsService Settings
+@inject IAppSettingsService Settings
 
-<MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDark" />
+<MudThemeProvider Theme="_theme" IsDarkMode="_settings.DarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -34,8 +34,11 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
                        OnClick="ToggleDrawer" Class="d-md-none" />
         <div>
-            <MudText Typo="Typo.h6" Class="font-weight-bold">Bangison Ltd</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Welcome back</MudText>
+            <MudText Typo="Typo.h6" Class="font-weight-bold">@_settings.CompanyName</MudText>
+            @if (!string.IsNullOrEmpty(_settings.WelcomeMessage))
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@_settings.WelcomeMessage</MudText>
+            }
         </div>
         <MudSpacer />
     </MudAppBar>
@@ -49,7 +52,7 @@
 
 @code {
     private bool _drawerOpen = true;
-    private bool _isDark;
+    private AppSettings _settings = new();
 
     private readonly MudTheme _theme = new()
     {
@@ -94,15 +97,20 @@
 
     protected override void OnInitialized()
     {
-        _isDark = Settings.Current.DarkMode;
+        // Already loaded at startup, so the first render has the saved theme and name (no light-mode flash).
+        _settings = Settings.Current;
         Settings.OnChange += HandleSettingsChanged;
     }
 
-    private void HandleSettingsChanged()
+    // The service is shared by every open tab, so a save from any of them lands here,
+    // possibly on another circuit's thread: InvokeAsync moves it onto this one.
+    private void HandleSettingsChanged() => _ = InvokeAsync(() =>
     {
-        _isDark = Settings.Current.DarkMode;
+        _settings = Settings.Current;
         StateHasChanged();
-    }
+    });
+
+    public void Dispose() => Settings.OnChange -= HandleSettingsChanged;
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
