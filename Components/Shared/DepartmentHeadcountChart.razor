@@ -1,0 +1,77 @@
+@* Employees per department, as a single-series bar chart.
+   Fed by IDepartmentService.GetSummariesAsync() - the same numbers the Departments page shows. *@
+
+@if (Summaries.Count == 0)
+{
+    <MudText Color="Color.Secondary" Class="pa-6">No departments yet.</MudText>
+}
+else
+{
+    @* Wide screens: horizontal labels. Narrow screens: the names would overlap, so they are angled. *@
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        @Chart(_axisOptions)
+    </MudHidden>
+    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        @Chart(_narrowAxisOptions)
+    </MudHidden>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<DepartmentSummary> Summaries { get; set; } = Array.Empty<DepartmentSummary>();
+    [Parameter] public string Height { get; set; } = "320px";
+
+    // Brand blue: 5.1:1 against the light surface and 3.2:1 against the dark one, so the bars
+    // stay readable in both themes without a per-theme palette.
+    private const string BarColor = "#1565f0";
+
+    private List<ChartSeries> _series = new();
+    private string[] _labels = Array.Empty<string>();
+
+    private readonly ChartOptions _options = new()
+    {
+        ShowLegend = false,          // one series: the card title names it
+        ChartPalette = new[] { BarColor },
+        YAxisTicks = 1,              // head counts are whole numbers
+        MaxNumYAxisTicks = 10,
+        YAxisFormat = "0",
+        YAxisLines = true,
+        XAxisLines = false
+    };
+
+    private readonly AxisChartOptions _axisOptions = new()
+    {
+        MatchBoundsToSize = true,
+        StackedBarWidthRatio = 0.5   // bar takes half its slot; the rest is breathing room
+    };
+
+    private readonly AxisChartOptions _narrowAxisOptions = new()
+    {
+        MatchBoundsToSize = true,
+        StackedBarWidthRatio = 0.5,
+        XAxisLabelRotation = 45      // MudBlazor makes room for angled labels automatically
+    };
+
+    // StackedBar with a single series draws ordinary bars, but unlike Bar it lets us set the bar width.
+    private RenderFragment Chart(AxisChartOptions axisOptions) => @<MudChart ChartType="ChartType.StackedBar"
+                                                                            ChartSeries="_series"
+                                                                            XAxisLabels="_labels"
+                                                                            ChartOptions="_options"
+                                                                            AxisChartOptions="axisOptions"
+                                                                            Width="100%"
+                                                                            Height="@Height" />;
+
+    protected override void OnParametersSet()
+    {
+        // Largest first, so the ranking reads left to right; ties by name to keep the order stable.
+        var ordered = Summaries
+            .OrderByDescending(s => s.EmployeeCount)
+            .ThenBy(s => s.Name)
+            .ToList();
+
+        _labels = ordered.Select(s => s.Name).ToArray();
+        _series = new List<ChartSeries>
+        {
+            new() { Name = "Employees", Data = ordered.Select(s => (double)s.EmployeeCount).ToArray() }
+        };
+    }
+}

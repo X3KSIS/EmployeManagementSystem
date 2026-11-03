@@ -1,0 +1,46 @@
+@typeparam T
+
+@* Pager row for a server-paged table: "Showing x–y of n", rows per page, and page buttons.
+   The page owns the state; this component only displays Result and reports what the user picked. *@
+<MudDivider />
+<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="3" AlignItems="AlignItems.Center"
+          Justify="Justify.SpaceBetween" Class="pa-3">
+    <MudText Typo="Typo.body2" Color="Color.Secondary">
+        @if (Result.TotalCount == 0)
+        {
+            @* Disabled means the page is loading; don't claim "nothing found" before the data arrives. *@
+            @(Disabled ? "Loading…" : EmptyText)
+        }
+        else
+        {
+            @($"Showing {Result.FirstItemNumber}–{Result.LastItemNumber} of {Result.TotalCount} {(Result.TotalCount == 1 ? ItemName : ItemNamePlural)}")
+        }
+    </MudText>
+
+    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+        <MudSelect T="int" Value="Result.PageSize" ValueChanged="PageSizeChanged"
+                   Label="Rows per page" Variant="Variant.Outlined" Margin="Margin.Dense"
+                   Style="width:130px;">
+            @foreach (var size in PageSizeOptions)
+            {
+                <MudSelectItem T="int" Value="@size">@size</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudPagination Count="Result.PageCount" Selected="Result.Page" SelectedChanged="PageChanged"
+                       Color="Color.Primary" Size="Size.Small" ShowFirstButton="true" ShowLastButton="true"
+                       Disabled="Disabled" />
+    </MudStack>
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public PagedResult<T> Result { get; set; } = default!;
+    [Parameter] public string ItemName { get; set; } = "item";
+    [Parameter] public string ItemNamePlural { get; set; } = "items";
+    [Parameter] public string EmptyText { get; set; } = "Nothing to show";
+    [Parameter] public IReadOnlyList<int> PageSizeOptions { get; set; } = AppSettings.PageSizeOptions;
+    [Parameter] public bool Disabled { get; set; }
+
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+    [Parameter] public EventCallback<int> PageSizeChanged { get; set; }
+}

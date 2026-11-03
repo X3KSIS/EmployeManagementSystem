@@ -1,34 +1,127 @@
 @page "/settings"
-@using EmployeeManagementSystem.Services
-@inject AppSettingsService AppSettings
+@inject IAppSettingsService SettingsService
 @inject ISnackbar Snackbar
 
-<PageTitle>Settings</PageTitle>
+<PageTitle>EMS | Settings</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Settings</MudText>
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Settings</MudText>
 
-<MudPaper Class="pa-6" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-2">Appearance</MudText>
+@* Switches, radios and selects save as soon as they change; the company name is free text, so it has its own Save button. *@
+<MudGrid Spacing="3">
+    <MudItem xs="12" md="6">
+        <MudPaper Outlined="true" Class="pa-6 rounded-lg" Style="height:100%;">
+            <MudText Typo="Typo.h6" Class="font-weight-bold">Appearance</MudText>
 
-    <MudSwitch T="bool"
-                Value="_darkMode"
-               ValueChanged="OnDarkModeChanged"
-               Label="@(_darkMode ? "Dark mode" : "Light mode")"
-               Color="Color.Primary" />
-</MudPaper>
+            <MudText Typo="Typo.subtitle2" Class="mt-4">Theme</MudText>
+            <MudSwitch T="bool" Value="_saved.DarkMode" ValueChanged="OnDarkModeChanged"
+                       Label="@(_saved.DarkMode ? "Dark mode" : "Light mode")"
+                       Color="Color.Primary" Disabled="_saving" />
+
+            <MudText Typo="Typo.subtitle2" Class="mt-4">Table density</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Row spacing in the Employees, Departments and Reports tables.</MudText>
+            <MudRadioGroup T="TableDensity" Value="_saved.TableDensity" ValueChanged="OnDensityChanged" Disabled="_saving">
+                <MudRadio T="TableDensity" Value="TableDensity.Comfortable" Color="Color.Primary">Comfortable</MudRadio>
+                <MudRadio T="TableDensity" Value="TableDensity.Compact" Color="Color.Primary">Compact</MudRadio>
+            </MudRadioGroup>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudPaper Outlined="true" Class="pa-6 rounded-lg mb-3">
+            <MudText Typo="Typo.h6" Class="font-weight-bold">Company</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">Shown in the top bar on every page.</MudText>
+
+            <EditForm Model="_companyForm" OnValidSubmit="SaveCompanyAsync">
+                <DataAnnotationsValidator />
+                <MudStack Spacing="3">
+                    <MudTextField T="string" @bind-Value="_companyForm.CompanyName" For="@(() => _companyForm.CompanyName)"
+                                  Label="Company name" Variant="Variant.Outlined" Immediate="true" MaxLength="100" />
+                    <MudTextField T="string" @bind-Value="_companyForm.WelcomeMessage" For="@(() => _companyForm.WelcomeMessage)"
+                                  Label="Welcome message" Variant="Variant.Outlined" Immediate="true" MaxLength="100"
+                                  HelperText="The line under the company name. Leave empty to hide it." />
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+                        <MudButton Variant="Variant.Outlined" OnClick="ResetCompanyForm"
+                                   Disabled="@(_saving || !CompanyChanged)">Discard</MudButton>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                   Disabled="@(_saving || !CompanyChanged)">Save</MudButton>
+                    </MudStack>
+                </MudStack>
+            </EditForm>
+        </MudPaper>
+
+        <MudPaper Outlined="true" Class="pa-6 rounded-lg">
+            <MudText Typo="Typo.h6" Class="font-weight-bold">Tables</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                How many employees the Employees table shows per page when it opens. You can still change it on the page.
+            </MudText>
+            <MudSelect T="int" Value="_saved.DefaultPageSize" ValueChanged="OnPageSizeChanged"
+                       Label="Rows per page" Variant="Variant.Outlined" Style="max-width:200px;" Disabled="_saving">
+                @foreach (var size in AppSettings.PageSizeOptions)
+                {
+                    <MudSelectItem T="int" Value="@size">@size</MudSelectItem>
+                }
+            </MudSelect>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
-    private bool _darkMode;
+    private AppSettings _saved = new();       // what's in the database
+    private AppSettings _companyForm = new(); // the company name and welcome message being typed
+    private bool _saving;
+
+    private bool CompanyChanged =>
+        (_companyForm.CompanyName ?? "").Trim() != _saved.CompanyName ||
+        (_companyForm.WelcomeMessage ?? "").Trim() != _saved.WelcomeMessage;
 
     protected override void OnInitialized()
     {
-        _darkMode = AppSettings.Current.DarkMode;
+        _saved = SettingsService.Current;
+        _companyForm = SettingsService.Current.Clone();
     }
 
-    private void OnDarkModeChanged(bool value)
+    private Task OnDarkModeChanged(bool value)
+        => SaveAsync(s => s.DarkMode = value, value ? "Dark mode on." : "Light mode on.");
+
+    private Task OnDensityChanged(TableDensity value)
+        => SaveAsync(s => s.TableDensity = value, $"Tables set to {value.ToString().ToLowerInvariant()}.");
+
+    private Task OnPageSizeChanged(int value)
+        => SaveAsync(s => s.DefaultPageSize = value, $"Employees table will show {value} rows per page.");
+
+    private async Task SaveCompanyAsync()
     {
-        _darkMode = value;
-        AppSettings.SetDarkMode(value);
-        Snackbar.Add(value ? "Dark mode enabled." : "Light mode enabled.", Severity.Info);
+        var name = (_companyForm.CompanyName ?? "").Trim();
+        var welcome = (_companyForm.WelcomeMessage ?? "").Trim();
+        await SaveAsync(s =>
+        {
+            s.CompanyName = name;
+            s.WelcomeMessage = welcome;
+        }, "Company details saved.");
+        ResetCompanyForm();
+    }
+
+    private void ResetCompanyForm() => _companyForm = _saved.Clone();
+
+    // Applies one change on top of the saved settings (not the half-typed company name) and stores it.
+    private async Task SaveAsync(Action<AppSettings> change, string message)
+    {
+        _saving = true;
+        try
+        {
+            var next = SettingsService.Current.Clone();
+            change(next);
+            await SettingsService.SaveAsync(next);
+            _saved = SettingsService.Current;
+            Snackbar.Add(message, Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Settings could not be saved: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
     }
 }

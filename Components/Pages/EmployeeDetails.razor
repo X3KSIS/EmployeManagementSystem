@@ -57,7 +57,7 @@ else
 
         <MudGrid>
             <MudItem xs="12" sm="6" md="4"><DetailItem Label="Employee ID" Value="@_employee.Id.ToString()" /></MudItem>
-            <MudItem xs="12" sm="6" md="4"><DetailItem Label="Department" Value="@_employee.Department" /></MudItem>
+            <MudItem xs="12" sm="6" md="4"><DetailItem Label="Department" Value="@_employee.Department?.Name" /></MudItem>
             <MudItem xs="12" sm="6" md="4"><DetailItem Label="Salary" Value="@Formatters.Money(_employee.Salary)" /></MudItem>
             <MudItem xs="12" sm="6" md="4">
                 <DetailItem Label="Email">

@@ -1,5 +1,6 @@
 @page "/employees/add"
 @inject IEmployeeService EmployeeService
+@inject IDepartmentService DepartmentService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -9,7 +10,7 @@
 
 <MudPaper Outlined="true" Class="pa-6 rounded-lg">
     <EmployeeForm Model="_employee"
-                  Departments="EmployeeService.Departments"
+                  Departments="_departments"
                   SubmitText="Save Employee"
                   OnSubmit="SaveAsync"
                   OnCancel="GoBack" />
@@ -17,6 +18,10 @@
 
 @code {
     private readonly Employee _employee = new();
+    private IReadOnlyList<Department> _departments = Array.Empty<Department>();
+
+    protected override async Task OnInitializedAsync()
+        => _departments = await DepartmentService.GetAllAsync();
 
     private async Task SaveAsync(Employee employee)
     {

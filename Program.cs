@@ -19,7 +19,8 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<AppSettingsService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddSingleton<IAppSettingsService, AppSettingsService>();
 
 var app = builder.Build();
 
@@ -31,6 +32,9 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db);
 }
+
+// Load the settings once, so the first render already has the right theme and company name.
+await app.Services.GetRequiredService<IAppSettingsService>().LoadAsync();
 
 if (!app.Environment.IsDevelopment())
 {

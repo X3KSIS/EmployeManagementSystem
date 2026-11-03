@@ -403,7 +403,6 @@ C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\rj
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\scopedcss\bundle\EmployeeManagementSystem.styles.css
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\compressed\tzxjg6is5z-{0}-7c7lhmh1j6-7c7lhmh1j6.gz
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\compressed\0wz98yz2xy-{0}-f96y5mhlyw-f96y5mhlyw.gz
-C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\compressed\zregsgdf6i-{0}-dxo2l2zykk-dxo2l2zykk.gz
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\compressed\rwl1h47xof-{0}-xmryko9e6j-xmryko9e6j.gz
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\compressed\rifpxfgbg4-{0}-7d17r9czpp-7d17r9czpp.gz
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\staticwebassets.build.json
@@ -417,3 +416,4 @@ C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\re
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\EmployeeManagementSystem.pdb
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\EmployeeManagementSystem.genruntimeconfig.cache
 C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\ref\EmployeeManagementSystem.dll
+C:\Users\Bangison\Desktop\Projects\EmployeeManagementSystem\obj\Debug\net10.0\compressed\zregsgdf6i-{0}-ds1qlok2ca-ds1qlok2ca.gz

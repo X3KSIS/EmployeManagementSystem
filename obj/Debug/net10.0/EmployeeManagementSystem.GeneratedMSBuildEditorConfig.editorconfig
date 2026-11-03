@@ -70,6 +70,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Pages/Reports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xSZXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Pages/Settings.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTZXR0aW5ncy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -80,6 +84,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Shared/ConfirmDialog.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcQ29uZmlybURpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Shared/DepartmentHeadcountChart.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRGVwYXJ0bWVudEhlYWRjb3VudENoYXJ0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Shared/DetailItem.razor]
@@ -100,6 +108,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Shared/StatusChip.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcU3RhdHVzQ2hpcC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/Shared/TablePager.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVGFibGVQYWdlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Bangison/Desktop/Projects/EmployeeManagementSystem/Components/_Imports.razor]

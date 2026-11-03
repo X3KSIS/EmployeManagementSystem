@@ -64,21 +64,23 @@ html, body {
     font-size: 0.8rem;
 }
 
-/* ---------- Top bar & content ---------- */
+/* ---------- Top bar & content ----------
+   Colours come from the MudBlazor theme (MainLayout's PaletteLight / PaletteDark),
+   so they switch with the dark-mode setting instead of staying light. */
 .ems-appbar.mud-appbar {
-    background-color: #fff;
-    color: #0b1b3a;
-    border-bottom: 1px solid #e3e8ef;
+    background-color: var(--mud-palette-appbar-background);
+    color: var(--mud-palette-appbar-text);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
 }
 
 .ems-main {
-    background-color: #f4f6fa;
+    background-color: var(--mud-palette-background);
     min-height: 100vh;
 }
 
 .ems-table .mud-table-head .mud-table-cell {
     font-weight: 600;
-    background-color: #f8fafc;
+    background-color: var(--mud-palette-background);
 }
 
 /* Blazor's built-in error banner */
